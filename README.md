@@ -1,1 +1,3 @@
 # chatyourway
+
+How to instructions
