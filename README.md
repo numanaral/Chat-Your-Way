@@ -2,7 +2,7 @@
 
 How to run the server:
 
-$ cd Desktop
+$ cd Desktop \n
 $ mkdir chatyourway
 $ cd chatyourway
 $ git clone https://github.com/numanaral/chatyourway.git
