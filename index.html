@@ -125,6 +125,8 @@
 
         .textOverflow {
             overflow-wrap: break-word;
+			position: relative;
+			bottom: 0;
         }
 
         .transitionResponsive{
@@ -318,7 +320,7 @@
 
         // Make the user's text bold
         socket.on('user text', function (data) {
-            $('span').css("font-weight", data);
+            $('span:last').css("font-weight", data);
         });
 
         // Display user nickname
