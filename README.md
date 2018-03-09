@@ -6,7 +6,7 @@ $ mkdir chatyourway
 $ cd chatyourway  
 $ git clone https://github.com/numanaral/chatyourway.git  
 $ npm install  
-$ node app.js  
+$ start
 
 <b> After the server is running:  </b>  
 -> Open your web browser  
