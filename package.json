@@ -1,0 +1,12 @@
+{
+  "name": "Chat_Your_Way",
+  "version": "3.0.2",
+  "description": "Basic chat application for SENG 513 A3",
+  "dependencies": {
+    "chance": "^1.0.13",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.15.2",
+    "npm": "^5.7.1",
+    "socket.io": "^1.7.3"
+  }
+}
