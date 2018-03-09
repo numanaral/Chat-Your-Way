@@ -1,0 +1,17 @@
+{
+  "name": "Chat your way",
+  "description": "Basic chat application for SENG 513 A3",
+  "website": "https://github.com/numanaral/chatyourway",
+  "success_url": "/",
+  "keywords": [
+    "node",
+    "express",
+    "socket.io",
+    "realtime",
+    "websocket"
+  ],
+  "scripts": {
+  },
+  "addons": [
+  ]
+}

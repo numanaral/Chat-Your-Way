@@ -1,0 +1,452 @@
+<!doctype html>
+<html>
+<head>
+    <title>Socket.IO chat</title>
+
+    <!-------->
+    <!-- CSS------------------------------------------------------------------------------------->
+    <!-------->
+
+    <style>
+
+        /*Gradient moving background animation*/
+        @-webkit-keyframes AnimationName {
+            0%{background-position:0% 97%}
+            50%{background-position:100% 4%}
+            100%{background-position:0% 97%}
+        }
+        @-moz-keyframes AnimationName {
+            0%{background-position:0% 97%}
+            50%{background-position:100% 4%}
+            100%{background-position:0% 97%}
+        }
+        @keyframes AnimationName {
+            0%{background-position:0% 97%}
+            50%{background-position:100% 4%}
+            100%{background-position:0% 97%}
+        }
+
+        /* Gradient animations */
+        /* https://www.gradient-animator.com/ */
+        body {
+            background: linear-gradient(47deg, #aa2f9b, #7ddd20,#4fd23a, #52e4bf);
+            background-size: 600% 600%;
+
+            -webkit-animation: AnimationName 250s ease infinite;
+            -moz-animation: AnimationName 250s ease infinite;
+            animation: AnimationName 250s ease infinite;
+
+            font: 13px Helvetica, Arial;
+            padding: 10px;
+        }
+
+        /* User textbox (textarea)*/
+        form textarea {
+            border: none;
+            overflow: auto;
+            outline: none;
+            resize: none;
+            -webkit-box-shadow: none;
+            -moz-box-shadow: none;
+            box-shadow: none;
+            width: 100%;
+        }
+
+        form button {
+            width: 100%;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            margin-bottom: 40px
+        }
+
+        #messages li {
+            padding: 5px 10px;
+        }
+
+        #messages li:nth-child(odd) {
+            background: #eee;
+        }
+
+        .btn {
+            height: 7.6vh;
+            flex: 1 1 auto;
+            transition: 0.5s;
+            background-size: 200% auto;
+            color: white;
+            text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 5px #eee;
+            border-radius: 10px;
+        }
+
+        .btn:hover {
+            background-position: right center; /* change the direction of the change here */
+        }
+
+        .nameIndicators{
+            height: 4vh;
+            flex: 1 1 auto;
+            transition: 0.5s;
+            background-size: 200% auto;
+            color: white;
+            text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 5px #eee;
+            border-radius: 10px;
+            pointer-events: none;
+            padding-top: 1px;
+            text-align: center;
+        }
+
+
+
+        body, html, .container-fluid {
+            font-family: 'Raleway', sans-serif;
+            padding: 1em 2em;
+            font-size: 15px;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        h1{
+            font-weight: 200;
+            margin: 0.4em 0;
+            font-size: 3.5em;
+        }
+
+
+        .screenRow {
+            height: 60vh;
+            overflow: auto;
+        }
+
+        .textOverflow {
+            overflow-wrap: break-word;
+        }
+
+        .transitionResponsive{
+            transition: 2s;
+        }
+
+        .prettifyUsers {
+            padding: 2px;
+            padding-left: 10%;
+            width: 100%;
+            height: 3%;
+            flex: 1 1 auto;
+            transition: 0.5s;
+            background-size: 200% auto;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 20px #eee;
+            border-radius: 10px;
+            background-image: linear-gradient(to right, #f6d365 0%, #fda085 51%, #f6d365 100%);
+        }
+
+        #messages li:nth-child(odd) {
+            background: #eee;
+        }
+
+        .prettifyUsers:hover {
+            background-position: right center; /* change the direction of the change here */
+        }
+
+        .titleStyle{
+            background-image: url(https://drive.google.com/uc?export=view&id=1VuBXzx58LADS92pMBYK8ATSAcmLvBu8B);
+            background-repeat: no-repeat;
+            background-size:contain;
+            background-position:center;
+            padding-bottom: 30px;
+            margin-top: -60px;
+        }
+
+    </style>
+
+
+    <!------------------->
+    <!-- CSS + JS CDNs ------------------------------------------------------------------------------------->
+    <!------------------->
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <!-- https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js -->
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script> -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chance/1.0.13/chance.min.js"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Raleway:200,100,400" rel="stylesheet" type="text/css"/>
+
+</head>
+
+<body>
+
+<!--------------->
+<!-- Home Page ------------------------------------------------------------------------------------->
+<!--------------->
+
+<!-- Container -->
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="row page-header">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <h1 class="titleStyle">
+                &nbsp
+                <!-- Header animation -->
+                <span
+                        class="txt-rotate hidden-xs hidden-sm"
+                        style="float:right"
+                        data-period="2000"
+                        data-rotate='[ "Hello World!", "SENG 513", "Assignment #3", "socket io.", "node.js" ]'>
+
+                </span>
+            </h1>
+        </div>
+    </div>
+
+
+    <!--Box Name Indicators-->
+    <div class="row">
+        <div id="nickNameIndicator"
+             class="col-sm-offset-1 col-md-offset-1 col-lg-offset-1 col-xs-8 col-sm-7 col-md-7 col-lg-7
+             nameIndicators nameIndicatorsHover">
+            Your nickname:
+        </div>
+        <div class="col-sm-offset-1 col-md-offset-1 col-lg-offset-1 col-xs-4 col-sm-2 col-md-2 col-lg-2
+        nameIndicators nameIndicatorsHover">
+            Online:
+        </div>
+    </div>
+
+    <!--Screens-->
+    <div class="row">
+        <div id="msgWindow"
+             class="col-sm-offset-1 col-md-offset-1 col-lg-offset-1 col-xs-8 col-sm-7 col-md-7 col-lg-7
+             panel panel-default screenRow transitionResponsive"
+             style="box-shadow: 0 0 5px #eee;">
+            <ul id="messages" style="margin-top: 10px;"></ul>
+        </div>
+        <div class="col-sm-offset-1 col-md-offset-1 col-lg-offset-1 col-xs-4 col-sm-2 col-md-2 col-lg-2
+        panel panel-default screenRow transitionResponsive"
+             style="box-shadow: 0 0 5px #eee;">
+            <p id="onlineUsers" style="padding-top: 5px;"></p>
+        </div>
+    </div>
+
+    <!--Chat Form-->
+    <div class="row">
+        <div class="col-sm-offset-1 col-md-offset-1 col-lg-offset-1 col-xs-8 col-sm-7 col-md-7 col-lg-7
+        panel panel-default transitionResponsive"
+             style="box-shadow: 0 0 5px #eee;">
+            <form action="">
+                <textarea id="m" autocomplete="off" name="Text1" cols="40" rows="2"
+                          placeholder="Type here..."></textarea>
+            </form>
+        </div>
+        <div class="col-sm-offset-1 col-md-offset-1 col-lg-offset-1 col-xs-4 col-sm-2 col-md-2 col-lg-2 ">
+             <form action="">
+                <button id="sendButton" class="btn"
+                        style="font-weight: bold; background-image:
+                        linear-gradient(to right, #fbc2eb 0%, #a6c1ee 51%, #fbc2eb 100%); ">
+                    Send
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-------------------->
+<!-- JS + socket io ------------------------------------------------------------------------------------->
+<!-------------------->
+
+<script>
+    $(function () {
+        // create the socket
+        var socket = io();
+        // get the elements for jquery functions
+        var $msgForm = $('form');
+        var $msgBox = $('#m');
+        var $chat = $('#messages');
+        var $users = $('#onlineUsers');
+        var $nick = $('#nickNameIndicator');
+        const msgWindow = document.getElementById('msgWindow');
+
+        // send the message to the server on submit
+        $msgForm.submit(function (e) {
+            e.preventDefault(); // avoid refreshing the page
+            socket.emit('send message', $msgBox.val()); // send the event(message) to the server (event, data)
+            $msgBox.val(''); // clear msg box
+        });
+
+        // receive the message from the server
+        socket.on('new message', function (data) {
+
+            if (data.msg.replace(/[^a-zA-Z0-9]/gi, '').length > 0) {
+                $chat.append('<li class="textOverflow">' + data.time + ' '
+                    + '<span style="font-weight: bold; color: ' + data.color + '">' + data.nickname + ': ' + '</span>'
+                    + '<span id="userText">' + data.msg + '</span>' + '</li>');
+
+                // check if you need to scroll
+                shouldScroll = msgWindow.scrollTop + msgWindow.clientHeight === msgWindow.scrollHeight;
+
+
+                if (!shouldScroll) {
+                    scrollToBottom();
+                }
+
+            }
+
+        });
+
+        // Make the user's text bold
+        socket.on('user text', function (data) {
+            $('span').css("font-weight", data);
+        });
+
+        // Display user nickname
+        socket.on('user nickname', function (data) {
+            $nick.html('');
+            $nick.html("Your nickname: " + data);
+        });
+
+        // Nickname taken alert
+        socket.on('nickname taken', function (data) {
+            alert('nickname ' + data + ' has already been taken. Please choose a different one and try again');
+        });
+
+        // Display the online users
+        socket.on('online users', function (data) {
+            data = JSON.parse(data);
+            $users.html('');
+            for (var userName in data) {
+                userName = '<div class="prettifyUsers" style="margin-top: 5px">' + data[userName] + '</div>';
+                //show the user names to the client
+                $users.append(userName);
+            }
+        });
+
+
+        // Get the old messages
+        socket.on('old messages', function (data) {
+            console.log(data.length);
+            for (var i = 0; i < data.length; i++) {
+
+                $chat.append('<li class="textOverflow">' + data[i].time + ' '
+                    + '<span style="font-weight: bold; color: ' + data[i].color + '">' + data[i].nickname + ': ' + '</span>'
+                    + '<span id="userText">' + data[i].msg + '</span>' + '</li>');
+
+                shouldScroll = msgWindow.scrollTop + msgWindow.clientHeight === msgWindow.scrollHeight;
+
+                if (!shouldScroll) {
+                    scrollToBottom();
+                }
+            }
+        });
+
+
+        // you can press shift enter to go to the next line, or just enter to send
+        $msgForm.keypress(function (e) {
+            if (e.keyCode == 13 && !e.shiftKey) {
+                e.preventDefault();
+                $('#sendButton').click();
+                return false;
+            }
+        });
+
+        function scrollToBottom() {
+            msgWindow.scrollTop = msgWindow.scrollHeight;
+        }
+
+
+
+    /*
+    <!---------------------->
+    <!-- Header Animation ------------------------------------------------------------------------------------->
+    <!---------------------->
+    */
+
+    /* Citation of this animation snippet */
+    /* https://speckyboy.com/css-javascript-text-animation-snippets/ */
+
+        var TxtRotate = function (el, toRotate, period) {
+            this.toRotate = toRotate;
+            this.el = el;
+            this.loopNum = 0;
+            this.period = parseInt(period, 10) || 2000;
+            this.txt = '';
+            this.tick();
+            this.isDeleting = false;
+        };
+
+        TxtRotate.prototype.tick = function () {
+            var i = this.loopNum % this.toRotate.length;
+            var fullTxt = this.toRotate[i];
+
+            if (this.isDeleting) {
+                this.txt = fullTxt.substring(0, this.txt.length - 1);
+            } else {
+                this.txt = fullTxt.substring(0, this.txt.length + 1);
+            }
+
+            this.el.innerHTML = '<span class="wrap">' + this.txt + '</span>';
+
+            var that = this;
+            var delta = 300 - Math.random() * 100;
+
+            if (this.isDeleting) {
+                delta /= 2;
+            }
+
+            if (!this.isDeleting && this.txt === fullTxt) {
+                delta = this.period;
+                this.isDeleting = true;
+            } else if (this.isDeleting && this.txt === '') {
+                this.isDeleting = false;
+                this.loopNum++;
+                delta = 500;
+            }
+
+            setTimeout(function () {
+                that.tick();
+            }, delta);
+        };
+
+        window.onload = function () {
+            var elements = document.getElementsByClassName('txt-rotate');
+            for (var i = 0; i < elements.length; i++) {
+                var toRotate = elements[i].getAttribute('data-rotate');
+                var period = elements[i].getAttribute('data-period');
+                if (toRotate) {
+                    new TxtRotate(elements[i], JSON.parse(toRotate), period);
+                }
+            }
+            // INJECT CSS
+            var css = document.createElement("style");
+            css.type = "text/css";
+            css.innerHTML = ".txt-rotate > .wrap { border-right: 0.08em solid #666 }";
+            document.body.appendChild(css);
+        };
+    });
+
+
+</script>
+</body>
+</html>
