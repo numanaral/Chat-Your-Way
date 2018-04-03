@@ -1,4 +1,4 @@
-# chatyourway
+# Chaty-Your-Way
 A simple chat application with a cool interface and some functionality: 
 - Chat history
 - Cookies
